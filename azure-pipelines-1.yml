@@ -32,3 +32,13 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+
+- template: templates/assetsControl.yml
+  parameters:
+    fileExtention: 'wav'
+    count: '2'
+
+- template: templates/assetsControl.yml
+  parameters:
+    fileExtention: 'dds'
+    count: '5'
