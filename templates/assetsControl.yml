@@ -8,12 +8,12 @@ jobs:
   pool:
     vmImage: windows-latest
 
-steps:
-- script: 'ls ${{assetsDirectory}}/*.${{fileExtension}} | wc -l > ${{fileExtention}}Count.txt'
-  displayName: '${{fileExtension}} assets count'
+  steps:
+  - script: 'ls ${{assetsDirectory}}/*.${{fileExtension}} | wc -l > ${{fileExtention}}Count.txt'
+    displayName: '${{fileExtension}} assets count'
 
-- script: mail -s "Project assets check" lori.sottocorno@libero.it <<< 'Failed'
-  rules:
-    - if: 'cat ${{fileExtention}}Count.txt === "${{count}}"'
-      when: always
-      # when: on_success
+  - script: mail -s "Project assets check" lori.sottocorno@libero.it <<< 'Failed'
+    rules:
+      - if: 'cat ${{fileExtention}}Count.txt === "${{count}}"'
+        when: always
+        # when: on_success

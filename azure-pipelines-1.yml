@@ -7,7 +7,7 @@ trigger:
 - main
 
 extends:
-  template: templates/assetsControl.yml
+  template: templates/assetsControl.yml@templates
 
 pool:
   vmImage: 'windows-latest'
