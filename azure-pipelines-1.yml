@@ -6,6 +6,9 @@
 trigger:
 - main
 
+extends:
+  template: templates/assetsControl.yml
+
 pool:
   vmImage: 'windows-latest'
 
