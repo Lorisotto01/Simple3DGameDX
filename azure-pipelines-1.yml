@@ -34,12 +34,12 @@ steps:
     configuration: '$(buildConfiguration)'
 
 extends:
-  template: templates/assetsControl.yml
-  parameters:
-    fileExtention: 'wav'
-    count: '2'
+  - template: templates/assetsControl.yml
+    parameters:
+      fileExtention: 'wav'
+      count: '2'
 
-  template: templates/assetsControl.yml
-  parameters:
-    fileExtention: 'dds'
-    count: '5'
+  - template: templates/assetsControl.yml
+    parameters:
+      fileExtention: 'dds'
+      count: '5'
