@@ -11,4 +11,4 @@ steps:
   rules:
     - if: 'cat ${{fileExtention}}Count.txt === "${{count}}"'
       when: always
-      when: on_success
+      # when: on_success
