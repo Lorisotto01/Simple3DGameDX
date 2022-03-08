@@ -44,5 +44,8 @@ steps:
 #     fileExtention: 'dds'
 #     count: '5'
 
-- publish: $(System.DefaultWorkingDirectory)/bin/Artifacts
-  artifact: $(artifactName)
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Pipeline.Workspace)'
+    artifact: '$(artifactName)'
+    publishLocation: 'pipeline'
