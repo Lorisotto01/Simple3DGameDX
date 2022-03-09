@@ -62,7 +62,7 @@ steps:
   inputs:
     deploymentScope: 'Resource Group'
     azureResourceManagerConnection: 'ImageBuilder'
-    subscriptionId: '3a36346f-08ec-4d4a-9f19-60bd98c217c4'
+    subscriptionId: '#0000000000'
     action: 'Create Or Update Resource Group'
     resourceGroupName: '$(ResourceGroup)'
     location: '$(Location)'
