@@ -57,7 +57,7 @@ steps:
   displayName: "Publish on Steam"
   inputs:
     gameName: "Test Game Installer"
-	  appid: "202930"
+	  appid: ""
 	  disk_size_mb:       "640"
 
 - task: CopyFiles@2
