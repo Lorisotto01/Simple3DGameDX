@@ -34,15 +34,15 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-# - template: templates/assetsControl.yml
-#   parameters:
-#     fileExtention: 'wav'
-#     count: '2'
+- template: templates/assetsControl.yml
+  parameters:
+    fileExtention: 'wav'
+    count: '2'
 
-# - template: templates/assetsControl.yml
-#   parameters:
-#     fileExtention: 'dds'
-#     count: '5'
+- template: templates/assetsControl.yml
+  parameters:
+    fileExtention: 'dds'
+    count: '5'
 
 - task: PublishPipelineArtifact@1
   inputs:
