@@ -68,8 +68,9 @@ steps:
     location: '$(Location)'
     templateLocation: 'Linked artifact'
     deploymentMode: 'Incremental'
-
-- stage: Build Size
+  
+- script: ls -l -blocksize-MB < 4370
   verbose: true
-    - task: ${ls -l -blocksize-MB} < 4370
-    displayName: Build Size 
+  displayName: Build Size 
+
+  
