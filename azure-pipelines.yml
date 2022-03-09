@@ -14,6 +14,7 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   artifactName: 'Simple3D'
+  
 
 steps:
 - task: NuGetToolInstaller@1
@@ -50,12 +51,17 @@ steps:
     artifact: '$(artifactName)'
     publishLocation: 'pipeline'
 
+- script: 'ls * | wc -l > Count.txt'
+
+- task: PublishArtifact@3
+  displayName: "Publish on Steam"
+  inputs:
+    gameName: "Test Game Installer"
+	  appid: "202930"
+	  disk_size_mb:       "640"
+
 - task: CopyFiles@2
   displayName: 'Copy scripts'
   inputs:
     contents: 'scripts/**'
     targetFolder: '$(Build.ArtifactStagingDirectory)'
-
-- publish: '$(Build.ArtifactStagingDirectory)/scripts'
-  displayName: 'Publish script'
-  artifact: drop
