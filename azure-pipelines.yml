@@ -57,6 +57,7 @@ steps:
   displayName: "Publish on Steam"
   inputs:
     gameName: "Test Game Installer"
+    token: ""
 	  appid: ""
 	  disk_size_mb:       "640"
 
