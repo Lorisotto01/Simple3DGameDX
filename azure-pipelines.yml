@@ -70,7 +70,6 @@ steps:
     deploymentMode: 'Incremental'
   
 - script: ls -l -blocksize-MB < 4370
-  verbose: true
   displayName: Build Size 
 
   
