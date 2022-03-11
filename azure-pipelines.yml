@@ -1,17 +1,112 @@
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- main
+- windows
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'windows-latest'
 
 variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  artifactName: 'Simple3D'
 
-steps:
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
+stages:
+  - stage: preBuild
+    steps:
+    - task: NuGetToolInstaller@1
+
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solution)'
+
+  - stage: BuildAndTest
+    steps:
+    - task: VSBuild@1
+      inputs:
+        solution: '$(solution)'
+        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+    - task: VSTest@2
+      inputs:
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+
+      
+  # - template: templates/assetsControl.yml
+  #   parameters:
+  #     fileExtention: 'wav'
+  #     count: '2'
+
+  # - template: templates/assetsControl.yml
+  #   parameters:
+  #     fileExtention: 'dds'
+  #     count: '5'
+
+  - stage: Deploy
+    steps:
+    - task: AzureResourceManagerTemplateDeployment@3
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: 'ImageBuilder'
+        subscriptionId: '3a36346f-08ec-4d4a-9f19-60bd98c217c4'
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(ResourceGroup)'
+        location: '$(Location)'
+        templateLocation: 'Linked artifact'
+        deploymentMode: 'Incremental'
+
+  - stage: Publish #https://docs.microsoft.com/en-us/azure/devops/pipelines/artifacts/build-artifacts?view=azure-devops&tabs=yaml
+# recommendded for faster performance
+    steps:
+    - task: CopyFiles@2
+      inputs:
+        sourceFolder: '$(Build.SourcesDirectory)'
+        contents: '**/$(BuildConfiguration)/**/?(*.exe|*.dll|*.pdb)' # da revedere gli estensioni
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: 'drop'
+
+# Download and debug
+    # - task: DownloadBuildArtifacts@0
+    #   inputs:
+    #     buildType: 'current'
+    #     downloadType: 'single'
+    #     artifactName: 'drop'
+    #     downloadPath: '$(System.ArtifactsDirectory)'
+
+
+    - task: SteamPublish@3
+      name: "Simple3DGameDX"
+	    appid: 202930
+	    disk_size_mb: "640"
+      targetFolder: '$(Build.ArtifactStagingDirectory)'
+      inputs: 
+        username: $USER
+        password: $PASS
+        
+	      
+
+
+  steps:
+  - script: echo 'ls $(Build.SourcesDirectory)/*.iso | wc -l > MB.txt'
+    rules: 
+      - if: MB.txt > 4780 mb
+        when: always
+        when: on_success
+
+  - task: ReleseVideo
+    displayName: Realesing video in FHD
+    inputs:
+      sourceFolder: '$(Build.SourcesDirectory)'
+      contents: '**/$(BuildConfiguration)/**/?(*.mp4|*.mov|*.mkv)'
+      resolution: '1920x1080'
+
+
