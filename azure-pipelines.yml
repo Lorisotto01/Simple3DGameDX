@@ -82,11 +82,18 @@ stages:
     #     artifactName: 'drop'
     #     downloadPath: '$(System.ArtifactsDirectory)'
 
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(Build.BinariesDirectory)'
+        includeRootFolder: true
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+        replaceExistingArchive: true
 
     - task: SteamPublish@3
       name: "Simple3DGameDX"
       appid: '202930'
-	    size_mb: "640"
+	    targetFolder: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
       
     
   steps:
