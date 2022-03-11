@@ -86,8 +86,9 @@ stages:
     - task: SteamPublish@3
       name: "Simple3DGameDX"
       appid: '202930'
-	    disk_size_mb: "640"
-
+	    size_mb: "640"
+      
+    
   steps:
   - script: echo 'ls $(Build.SourcesDirectory)/*.iso | wc -l > MB.txt'
     rules: 
