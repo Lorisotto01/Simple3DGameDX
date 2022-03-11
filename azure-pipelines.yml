@@ -15,57 +15,91 @@ variables:
   buildConfiguration: 'Release'
   artifactName: 'Simple3D'
 
-steps:
-- task: NuGetToolInstaller@1
+stages:
+  - stage: preBuild
+    steps:
+    - task: NuGetToolInstaller@1
 
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solution)'
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+  - stage: BuildAndTest
+    steps:
+    - task: VSBuild@1
+      inputs:
+        solution: '$(solution)'
+        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+    - task: VSTest@2
+      inputs:
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
 
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+      
+  # - template: templates/assetsControl.yml
+  #   parameters:
+  #     fileExtention: 'wav'
+  #     count: '2'
 
-- template: templates/assetsControl.yml
-  parameters:
-    fileExtention: 'wav'
-    count: '2'
+  # - template: templates/assetsControl.yml
+  #   parameters:
+  #     fileExtention: 'dds'
+  #     count: '5'
 
-- template: templates/assetsControl.yml
-  parameters:
-    fileExtention: 'dds'
-    count: '5'
+  - stage: Deploy
+    steps:
+    - task: AzureResourceManagerTemplateDeployment@3
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: 'ImageBuilder'
+        subscriptionId: '3a36346f-08ec-4d4a-9f19-60bd98c217c4'
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(ResourceGroup)'
+        location: '$(Location)'
+        templateLocation: 'Linked artifact'
+        deploymentMode: 'Incremental'
 
-- task: PublishPipelineArtifact@1
-  inputs:
-    targetPath: '$(Pipeline.Workspace)/Artifacts'
-    artifact: '$(artifactName)'
-    publishLocation: 'pipeline'
+  - stage: Publish #https://docs.microsoft.com/en-us/azure/devops/pipelines/artifacts/build-artifacts?view=azure-devops&tabs=yaml
+# recommendded for faster performance
+    steps:
+    - task: CopyFiles@2
+      inputs:
+        sourceFolder: '$(Build.SourcesDirectory)'
+        contents: '**/$(BuildConfiguration)/**/?(*.exe|*.dll|*.pdb)' # da revedere gli estensioni
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: 'drop'
 
-# - script: ansible-galaxy collection install community.general
+# Download and debug
+    # - task: DownloadBuildArtifacts@0
+    #   inputs:
+    #     buildType: 'current'
+    #     downloadType: 'single'
+    #     artifactName: 'drop'
+    #     downloadPath: '$(System.ArtifactsDirectory)'
 
-# - task: Create an ISO file
-#   community.general.iso_create:
-#     src_files:
-#       - $(Pipeline.Workspace)/Artifacts
-#     dest_iso: $(Pipeline.Workspace)/ISO/test.iso
-#     interchange_level: 3
-- task: AzureResourceManagerTemplateDeployment@3
-  inputs:
-    deploymentScope: 'Resource Group'
-    azureResourceManagerConnection: 'ImageBuilder'
-    subscriptionId: '3a36346f-08ec-4d4a-9f19-60bd98c217c4'
-    action: 'Create Or Update Resource Group'
-    resourceGroupName: '$(ResourceGroup)'
-    location: '$(Location)'
-    templateLocation: 'Linked artifact'
-    deploymentMode: 'Incremental'
+
+    - task: SteamPublish@3
+      name: "Simple3DGameDX"
+      appid: '202930'
+	    disk_size_mb: "640"
+
+  steps:
+  - script: echo 'ls $(Build.SourcesDirectory)/*.iso | wc -l > MB.txt'
+    rules: 
+      - if: MB.txt > 4780 mb
+        when: always
+        when: on_success
+
+  - task: ReleseVideo
+    displayName: Realesing video in FHD
+    inputs:
+      sourceFolder: '$(Build.SourcesDirectory)'
+      contents: '**/$(BuildConfiguration)/**/?(*.mp4|*.mov|*.mkv)'
+      resolution: '1920x1080'
+
 
